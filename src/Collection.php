@@ -2,6 +2,8 @@
 
 namespace MongoOdm;
 
+use function _\snakeCase;
+
 /**
  * 集合,对应表,能够进行数据的增删改查
  * Interface Collection
@@ -10,6 +12,30 @@ namespace MongoOdm;
 class Collection implements CollectionInterface
 {
 
+    protected $_source = '';# 集合名字
+    protected $_collection;
+
+    /**
+     * 对象初始化,运行 initialize,并设置默认集合对象
+     * Collection constructor.
+     * @throws \Exception
+     */
+    public function __construct()
+    {
+        if (method_exists($this, 'initialize')) {
+            $this->initialize();
+        }
+        $this->_collection = Di::getInstance()->getCollection($this->getSource());
+    }
+
+
+    /**
+     *
+     */
+    public function initialize()
+    {
+
+    }
 
     /**
      * 返回映射的表名
@@ -18,7 +44,10 @@ class Collection implements CollectionInterface
      */
     public function getSource()
     {
-
+        if ($this->_source) {
+            return $this->_source;
+        }
+        return snakeCase(substr(strrchr(get_class($this), '\\'), 1));
     }
 
     /**
@@ -77,10 +106,24 @@ class Collection implements CollectionInterface
      *
      * @return Phalcon\Mvc\Model\ResultsetInterface
      */
-    public static function find($parameters = null)
+    public function find($parameters = null, array $option)
     {
 
     }
+
+    /**
+     * 模式方法
+     * @param $name
+     * @param $arguments
+     */
+    public static function __callStatic($name, $arguments)
+    {
+        $collection = Di::getShared(substr(strrchr(get_called_class(), '\\'), 1));
+       $collection;
+       dd($collection);
+        // TODO: Implement __callStatic() method.
+    }
+
 
     /**
      * Allows to query the first record that match the specified conditions
@@ -158,18 +201,6 @@ class Collection implements CollectionInterface
     {
 
     }
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 }
