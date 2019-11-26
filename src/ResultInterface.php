@@ -7,7 +7,7 @@ namespace MongoOdm;
  * Interface ResultsetInterface
  * @package MongoOdm
  */
-interface ResultsetInterface
+interface ResultInterface
 {
     /**
      * 获取结果集中的第一行

@@ -2,7 +2,9 @@
 
 namespace MongoOdm;
 
+use MongoDB\Driver\Cursor;
 use function _\snakeCase;
+use function _\startsWith;
 
 /**
  * 集合,对应表,能够进行数据的增删改查
@@ -13,7 +15,8 @@ class Collection implements CollectionInterface
 {
 
     protected $_source = '';# 集合名字
-    protected $_collection;
+    protected $_collection; # 集合链接对象
+    protected $_documentclass; # 文档对象类
 
     /**
      * 对象初始化,运行 initialize,并设置默认集合对象
@@ -102,103 +105,62 @@ class Collection implements CollectionInterface
     }
 
     /**
-     * Allows to query a set of records that match the specified conditions
-     *
-     * @return Phalcon\Mvc\Model\ResultsetInterface
-     */
-    public function find($parameters = null, array $option)
-    {
-
-    }
-
-    /**
      * 模式方法
      * @param $name
      * @param $arguments
      */
     public static function __callStatic($name, $arguments)
     {
-        $collection = Di::getShared(substr(strrchr(get_called_class(), '\\'), 1));
-       $collection;
-       dd($collection);
-        // TODO: Implement __callStatic() method.
-    }
-
-
-    /**
-     * Allows to query the first record that match the specified conditions
-     *
-     * @param array parameters
-     * @return static
-     */
-    public static function findFirst($parameters = null)
-    {
-
+        $re = self::_invokeFinder($name, $arguments);
+        if (is_null($re)) {
+            throw new \Exception('err114');
+        }
+        return $re;
     }
 
     /**
-     * Create a criteria for a specific model
-     *
-     * @param \Phalcon\DiInterface dependencyInjector
-     * @return \Phalcon\Mvc\Model\CriteriaInterface
+     * 尝试检查查询是否必须调用查找程序
+     * @param string $method
+     * @param array $arguments
      */
-    public static function query($dependencyInjector = null)
+    protected final static function _invokeFinder(string $method, array $arguments)
     {
+        $collection = Di::getShared(get_called_class());
 
+        if (method_exists(Query::class, $method)) {
+            $re = call_user_func_array([(new Query($collection->_collection)), $method], $arguments);
+            return $collection->data2res($re);
+        }
+        return null;
     }
 
     /**
-     * Allows to count how many records match the specified conditions
-     *
-     * @param array parameters
-     * @return int
+     * 创建一个 文档对象
+     * @param null $bsondocument
+     * @return DocumentInterface
+     * @throws \Exception
      */
-    public static function count($parameters = null)
+    public function createDocument($bsondocument = null): DocumentInterface
     {
-
+        if (!class_exists($this->_documentclass)) {
+            # 文档类不存在
+            throw new \Exception("不存在的文档类!");
+        }
+        return new $this->_documentclass($this,$bsondocument);
     }
 
     /**
-     * Allows to calculate a sum on a column that match the specified conditions
-     *
-     * @param array parameters
-     * @return double
+     * 将mongodb返回的数据转换为 result
      */
-    public static function sum($parameters = null)
+    private function data2res($data)
     {
 
-    }
-
-    /**
-     * Allows to get the maximum value of a column that match the specified conditions
-     *
-     * @param array parameters
-     * @return mixed
-     */
-    public static function maximum($parameters = null)
-    {
-
-    }
-
-    /**
-     * Allows to get the minimum value of a column that match the specified conditions
-     *
-     * @param array parameters
-     * @return mixed
-     */
-    public static function minimum($parameters = null)
-    {
-
-    }
-
-    /**
-     * Allows to calculate the average value on a column matching the specified conditions
-     *
-     * @param array parameters
-     * @return double
-     */
-    public static function average($parameters = null)
-    {
+        if ($data instanceof Cursor) {
+            $res = new Result($this,$data);
+            return $res;
+            # 多条数据
+        }
+        # 一条数据
 
     }
 

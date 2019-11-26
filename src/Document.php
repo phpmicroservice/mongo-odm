@@ -9,19 +9,32 @@ use MongoDB\Model\BSONDocument;
  * 文档
  * Class Document
  * @package MongoOdm
- * @property-read BSONDocument $bson;
+ * @property-read BSONDocument $_bsondocument;
  */
 class Document implements DocumentInterface, \ArrayAccess
 {
-    private static $collection;# 集合对象 静态
-    private static $collection_class;# 集合类名
-    private $bsondocument;# BSON对象
+    private static $_collection;# 集合对象 静态
+    private static $_collection_class;# 集合类名
+    private $_bsondocument;# BSON对象
 
-    public function __construct(Collection $collection, BSONDocument $bsondocument)
+    public function __construct(Collection $collection,$bsondocument=null)
     {
         $this->setCollection($collection);
-        $this->bsondocument = $bsondocument;
+        if($bsondocument){
+            $this->setBsonDocument($bsondocument);
+        }
+
     }
+
+    /**
+     * 设置bson对象
+     * @param BSONDocument $bsondocument
+     */
+    public function setBsonDocument(BSONDocument $bsondocument)
+    {
+        $this->_bsondocument = $bsondocument;
+    }
+
 
     /**
      * 获取Id 字符串| ObjectId 默认为字符串
@@ -30,10 +43,10 @@ class Document implements DocumentInterface, \ArrayAccess
      */
     public function getId($string = true)
     {
-        if($string){
-            return (string)$this->bsondocument->_id;
+        if ($string) {
+            return (string)$this->_bsondocument->_id;
         }
-        return $this->bsondocument->_id;
+        return $this->_bsondocument->_id;
     }
 
     /**
@@ -87,7 +100,7 @@ class Document implements DocumentInterface, \ArrayAccess
      */
     public function setCollection(Collection $collection)
     {
-        return $this->collection = $collection;
+        return $this->_collection = $collection;
     }
 
     /**
