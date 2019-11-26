@@ -36,7 +36,7 @@ interface DocumentInterface
      * @param array $data
      * @return bool
      */
-    public function save(array $data): bool;
+    public function save(array $data): bool ;
 
     /**
      * 删除数据

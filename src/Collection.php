@@ -10,6 +10,8 @@ use function _\startsWith;
  * 集合,对应表,能够进行数据的增删改查
  * Interface Collection
  * @package mongoodm
+ * @property \MongoDB\Collection $_collection
+ * @mixin Query
  */
 class Collection implements CollectionInterface
 {
@@ -17,6 +19,7 @@ class Collection implements CollectionInterface
     protected $_source = '';# 集合名字
     protected $_collection; # 集合链接对象
     protected $_documentclass; # 文档对象类
+    protected $_field=[];
 
     /**
      * 对象初始化,运行 initialize,并设置默认集合对象
@@ -104,6 +107,15 @@ class Collection implements CollectionInterface
 
     }
 
+    public function __call($method, $arguments)
+    {
+        if (method_exists(Query::class, $method)) {
+            $re = call_user_func_array([(new Query($this->_collection)), $method], $arguments);
+            return $this->data2res($re);
+        }
+        return null;
+    }
+
     /**
      * 模式方法
      * @param $name
@@ -158,10 +170,9 @@ class Collection implements CollectionInterface
         if ($data instanceof Cursor) {
             $res = new Result($this,$data);
             return $res;
-            # 多条数据
+            # 查询多条数据
         }
-        # 一条数据
-
+        return $data;
     }
 
 

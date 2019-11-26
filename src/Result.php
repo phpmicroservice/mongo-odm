@@ -121,13 +121,14 @@ class Result implements ResultInterface, \Iterator, \SeekableIterator, \Countabl
     }
 
     /**
-     * Returns a complete resultset as an array, if the resultset has a big number of rows
-     * it could consume more memory than currently it does.
+     * 数组转换
      */
     public function toArray(): array
     {
-        dd($this);
+        foreach ($this as $a){
 
+        }
+        return $this->_document;
     }
 
     /**

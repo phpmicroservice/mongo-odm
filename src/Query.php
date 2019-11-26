@@ -12,6 +12,8 @@ class Query implements QueryInterface
 
     private $_collection;
 
+
+
     public function __construct(\MongoDB\Collection $collection)
     {
         $this->_collection = $collection;
@@ -21,11 +23,22 @@ class Query implements QueryInterface
      * 查询
      * @param array $parameters
      * @param array $option
-     * @return \MongoDB\Driver\Cursor|Phalcon\Mvc\Model\ResultsetInterface
+     * @return Result
      */
     public function find(array $parameters = [], array $option)
     {
         return $this->_collection->find($parameters, $option);
+    }
+
+    /**
+     * @param $filter
+     * @param $update
+     * @param array $options
+     * @return \MongoDB\UpdateResult
+     */
+    public function updateOne($filter, $update, array $options = [])
+    {
+        return $this->_collection->updateOne($filter, $update,  $options);
     }
 
     /**
