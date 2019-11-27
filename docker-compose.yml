@@ -1,0 +1,15 @@
+version: '2'
+networks:
+  default:
+    external:
+      name: ggggg
+services:
+  dev:
+    build: .
+    image: mongoodm:master
+    privileged: false
+    restart: always
+    volumes:
+      - .:/var/www/html/
+    tty: true
+    working_dir: /var/www/html/

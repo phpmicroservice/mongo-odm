@@ -4,10 +4,9 @@
   "keywords": [
     "mongodb",
     "mongo",
-    "odm",
-    "phalcon"
+    "odm"
   ],
-  "description": "pms的spms的工具,包含数据处理等",
+  "description": "mongodb的对象化工具,通过面向对象的操作来操作mongodb数据库",
   "license": "MIT",
   "authors": [
     {
@@ -18,10 +17,14 @@
   "require": {
     "ext-json": "*",
     "mongodb/mongodb": "^1.5",
-    "ext-json": "^1.5"
+    "ext-json": "^1.5",
+    "ext-mongodb": "*",
+    "lodash-php/lodash-php": "^0.0.6"
   },
   "require-dev": {
-    "phalcon/ide-stubs": "v3.4.*"
+    "phalcon/ide-stubs": "v3.4.*",
+    "phpunit/phpunit": "^7.0",
+    "phpunit/dbunit": "^4.0"
   },
   "autoload": {
     "psr-4": {
