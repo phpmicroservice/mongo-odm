@@ -15,6 +15,7 @@
     }
   ],
   "require": {
+    "php": ">7.2",
     "ext-json": "*",
     "mongodb/mongodb": "^1.5",
     "ext-json": "^1.5",

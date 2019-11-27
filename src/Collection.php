@@ -3,6 +3,7 @@
 namespace MongoOdm;
 
 use MongoDB\Driver\Cursor;
+use MongoDB\Model\BSONDocument;
 use function _\snakeCase;
 use function _\startsWith;
 
@@ -19,7 +20,7 @@ class Collection implements CollectionInterface
     protected $_source = '';# 集合名字
     protected $_collection; # 集合链接对象
     protected $_documentclass; # 文档对象类
-    protected $_field=[];
+    protected $_field = [];
 
     /**
      * 对象初始化,运行 initialize,并设置默认集合对象
@@ -66,60 +67,36 @@ class Collection implements CollectionInterface
 
     }
 
-
     /**
-     * 从返回新模型的数组中为模型分配值
-     *
-     * @param \Phalcon\Mvc\Model base
-     * @param array data
-     * @param array columnMap
-     * @param int dirtyState
-     * @param boolean keepSnapshots
-     * @return \Phalcon\Mvc\Model result
+     * 魔术方法 调用不存在的方法的时候调用
+     * @param $method
+     * @param $arguments
+     * @return Result|null
      */
-    public static function cloneResultMap(array $data, $columnMap, int $dirtyState = 0, boolean $keepSnapshots = null)
-    {
-
-    }
-
-    /**
-     * Assigns values to a model from an array returning a new model
-     *
-     * @param \Phalcon\Mvc\ModelInterface base
-     * @param array data
-     * @param int dirtyState
-     * @return \Phalcon\Mvc\ModelInterface
-     */
-    public static function cloneResult(array $data, int $dirtyState = 0)
-    {
-
-    }
-
-    /**
-     * Returns an hydrated result based on the data and the column map
-     *
-     * @param array data
-     * @param array columnMap
-     * @param int hydrationMode
-     */
-    public static function cloneResultMapHydrate(array $data, $columnMap, int $hydrationMode)
-    {
-
-    }
-
     public function __call($method, $arguments)
     {
         if (method_exists(Query::class, $method)) {
-            $re = call_user_func_array([(new Query($this->_collection)), $method], $arguments);
+            $re = call_user_func_array([$this->getQuery(), $method], $arguments);
             return $this->data2res($re);
         }
         return null;
     }
 
     /**
-     * 模式方法
+     * 获取集合连接对象
+     * @return \MongoDB\Collection
+     */
+    public function getQuery(): Query
+    {
+        return new Query($this->_collection);
+    }
+
+    /**
+     * 魔术方法,调用不存在的静态方法的时候调用
      * @param $name
      * @param $arguments
+     * @return Result|null
+     * @throws \Exception
      */
     public static function __callStatic($name, $arguments)
     {
@@ -138,9 +115,8 @@ class Collection implements CollectionInterface
     protected final static function _invokeFinder(string $method, array $arguments)
     {
         $collection = Di::getShared(get_called_class());
-
-        if (method_exists(Query::class, $method)) {
-            $re = call_user_func_array([(new Query($collection->_collection)), $method], $arguments);
+        if (method_exists(Query::class, $method) && $collection instanceof Collection) {
+            $re = call_user_func_array([$collection->getQuery(), $method], $arguments);
             return $collection->data2res($re);
         }
         return null;
@@ -158,7 +134,7 @@ class Collection implements CollectionInterface
             # 文档类不存在
             throw new \Exception("不存在的文档类!");
         }
-        return new $this->_documentclass($this,$bsondocument);
+        return new $this->_documentclass($this, $bsondocument);
     }
 
     /**
@@ -166,11 +142,15 @@ class Collection implements CollectionInterface
      */
     private function data2res($data)
     {
-
+        dump($data);
         if ($data instanceof Cursor) {
-            $res = new Result($this,$data);
+            $res = new Result($this, $data);
             return $res;
             # 查询多条数据
+        }
+        if ($data instanceof BSONDocument) {
+            # 一条数据
+            return $this->createDocument($data);
         }
         return $data;
     }

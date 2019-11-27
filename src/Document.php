@@ -10,18 +10,19 @@ use MongoDB\Model\BSONDocument;
  * Class Document
  * @package MongoOdm
  * @property-read BSONDocument $_bsondocument;
- * @property-read \MongoDB\Collection $_collection
+ * @property-read \MongoOdm\Collection $_collection
  */
 class Document implements DocumentInterface, \ArrayAccess
 {
     private $_collection;# 集合对象 静态
-    protected $_collection_class;# 集合类名
+    protected static $_collection_class;# 集合类名
     private $_bsondocument;# BSON对象
     private $_data;# 数据
     # 默认值仅在保存的时候起作用
     protected $_fields;# 字段白名单
     protected $_field;# 字段[默认值,类型,是否可空,]
     protected $__default;# 是否在公开属性中使用默认值
+    protected $_id;# 文档标识
 
     /**
      * 构造函数
@@ -29,9 +30,12 @@ class Document implements DocumentInterface, \ArrayAccess
      * @param Collection $collection
      * @param null $bsondocument
      */
-    public function __construct(Collection $collection, $bsondocument = null)
+    public function __construct(Collection $collection = null, $bsondocument = null)
     {
-        $this->setCollection($collection);
+        if ($collection instanceof Collection) {
+            $this->setCollection($collection);
+        }
+
         if ($bsondocument) {
             $this->setBsonDocument($bsondocument);
         }
@@ -46,13 +50,32 @@ class Document implements DocumentInterface, \ArrayAccess
     }
 
     /**
+     * 获取这个对象
+     * @return bool|Document|void
+     */
+    public static function getDocment()
+    {
+        if (!class_exists(get_called_class()::$_collection_class)) {
+            return false;
+        }
+        $col = Di::getShared(get_called_class()::$_collection_class);
+        if ($col instanceof Collection) {
+            return new self($col);
+        }
+        return;
+    }
+
+
+    /**
      * 设置bson对象
      * @param BSONDocument $bsondocument
      */
     public function setBsonDocument(BSONDocument $bsondocument)
     {
         $this->_bsondocument = $bsondocument;
+
         $this->_data = $bsondocument->getArrayCopy();
+        $this->_id = $this->_data['_id'];
     }
 
 
@@ -64,9 +87,9 @@ class Document implements DocumentInterface, \ArrayAccess
     public function getId($string = true)
     {
         if ($string) {
-            return (string)$this->_bsondocument->_id;
+            return (string)$this->_id;
         }
-        return $this->_bsondocument->_id;
+        return $this->_id;
     }
 
     /**
@@ -76,18 +99,31 @@ class Document implements DocumentInterface, \ArrayAccess
      */
     public function create(array $data): string
     {
-
+        if (isset($this->_id)) {
+            # 以存在的数据，不允许新建
+            return false;
+        }
+        if ($data) {
+            $this->dataSet($data);
+        }
+        if (!$this->_data) {
+            # 没有数据
+            throw new \Exception("没有数据存个毛线");
+        }
+        $insertOneResult = $this->_collection->insertOne($this->_data);
+        return $insertOneResult->getInsertedId();
     }
+
 
     /**
      * 保存文档,落库
      * @param array $data
      * @return bool
      */
-    public function save(array $data=[]): bool
+    public function save(array $data = []): bool
     {
         # 新建判断
-        if(!isset($this->_data['_id'])){
+        if ($this->getId()) {
             return $this->create($data);
         }
         if ($data) {
@@ -112,12 +148,24 @@ class Document implements DocumentInterface, \ArrayAccess
     }
 
     /**
+     * 回去数据
+     * @return mixed
+     */
+    public function dataGet(): array
+    {
+        return $this->_data;
+    }
+
+    /**
      * 删除数据,落库
      * @return bool
      */
     public function delete(): bool
     {
-
+        $uRes = $this->_collection->deleteOne(['_id' => $this->getId(false)]);
+        dump($this->getId(false));
+        $this->reset();
+        return (bool)$uRes->getDeletedCount();
     }
 
     /**
@@ -125,17 +173,21 @@ class Document implements DocumentInterface, \ArrayAccess
      */
     public function refresh()
     {
-
+        $dd = $this->_collection->getQuery()->findFirstById($this->getId());
+        if ($dd instanceof BSONDocument) {
+            $this->setBsonDocument($dd);
+        }
     }
 
 
     /**
-     *
-     * 重置模型实例数据,不落库
+     * 重置模型实例数据,不落库,Id不变（Id为文档永久唯一标识）
+     * @see 新的文档,创建新的文档对象
      */
     public function reset()
     {
-
+        $this->_data = [];
+        $this->_bsondocument = null;
     }
 
     /**

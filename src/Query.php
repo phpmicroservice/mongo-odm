@@ -2,6 +2,9 @@
 
 namespace MongoOdm;
 
+use MongoDB\BSON\ObjectId;
+use MongoDB\Driver\Cursor;
+
 /**
  * Class Query
  * @package MongoOdm
@@ -11,7 +14,6 @@ class Query implements QueryInterface
 {
 
     private $_collection;
-
 
 
     public function __construct(\MongoDB\Collection $collection)
@@ -31,6 +33,17 @@ class Query implements QueryInterface
     }
 
     /**
+     * 插入一条
+     * @param $document
+     * @param array $options
+     * @return \MongoDB\InsertOneResult
+     */
+    public function insertOne($document, array $options = [])
+    {
+        return $this->_collection->insertOne($document, $options);
+    }
+
+    /**
      * @param $filter
      * @param $update
      * @param array $options
@@ -38,7 +51,18 @@ class Query implements QueryInterface
      */
     public function updateOne($filter, $update, array $options = [])
     {
-        return $this->_collection->updateOne($filter, $update,  $options);
+        return $this->_collection->updateOne($filter, $update, $options);
+    }
+
+    /**
+     * 删除一个
+     * @param $filter
+     * @param array $options
+     * @return \MongoDB\DeleteResult
+     */
+    public function deleteOne($filter, array $options = [])
+    {
+        return $this->_collection->deleteOne($filter, $options);
     }
 
     /**
@@ -47,21 +71,25 @@ class Query implements QueryInterface
      * @param array parameters
      * @return static
      */
-    public function findFirst($parameters = null)
+    public function findFirst($filter = [], $options)
     {
-
+        return $this->_collection->findOne($filter, $options);
     }
 
     /**
-     * 进行命令
-     *
-     * @param array $parameters
-     * @return
+     * 根据id获取第一个
+     * @param $id
+     * @param $options
+     * @return array|object|null
      */
-    public function query(array $parameters = null)
+    public function findFirstById($id, $options = [])
     {
-
+        $filter = [
+            '_id' => new ObjectId($id)
+        ];
+        return $this->_collection->findOne($filter, $options);
     }
+
 
     /**
      * 统计数量
@@ -69,9 +97,24 @@ class Query implements QueryInterface
      * @param array parameters
      * @return int
      */
-    public function count($parameters = null)
+    public function count($match = null, $options = [])
     {
-
+        $parameters = [[
+            '$group' => [
+                '_id' => 1,
+                'count' => [
+                    '$sum' => 1
+                ]
+            ]
+        ]];
+        if ($match) {
+            $parameters[0]['$match'] = $match;
+        }
+        $cursor = $this->_collection->aggregate($parameters, $options);
+        if ($cursor instanceof Cursor) {
+            return $cursor->toArray()[0]['count'];
+        }
+        throw new \Exception('意外的错误！');
     }
 
     /**
@@ -82,7 +125,7 @@ class Query implements QueryInterface
      */
     public function sum($parameters = null)
     {
-
+        return $this->_collection->aggregate($parameters, $option);
     }
 
     /**
@@ -93,7 +136,7 @@ class Query implements QueryInterface
      */
     public function maximum($parameters = null)
     {
-
+        return $this->_collection->aggregate($parameters, $option);
     }
 
     /**
@@ -104,7 +147,7 @@ class Query implements QueryInterface
      */
     public function minimum($parameters = null)
     {
-
+        return $this->_collection->aggregate($parameters, $option);
     }
 
     /**
@@ -113,9 +156,21 @@ class Query implements QueryInterface
      * @param array parameters
      * @return double
      */
-    public function average($parameters = null)
+    public function average($parameters = null, $option = null)
     {
         return $this->_collection->aggregate($parameters, $option);
+    }
+
+    /**
+     * 魔术方法,当调用不存在的方法的时候调用
+     * @param $name
+     * @param $arguments
+     */
+    public function __call($name, $arguments)
+    {
+        if (method_exists($this->_collection, $name)) {
+            return call_user_func_array([$this->_collection, $name], $arguments);
+        }
     }
 
 }

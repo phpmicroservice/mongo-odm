@@ -21,15 +21,8 @@ interface QueryInterface
      * @param array parameters
      * @return static
      */
-    public function findFirst($parameters = null);
+    public function findFirst($filter = [], $options);
 
-    /**
-     * 进行命令
-     *
-     * @param array $parameters
-     * @return
-     */
-    public function query(array $parameters = null);
 
     /**
      * 统计数量
@@ -37,7 +30,7 @@ interface QueryInterface
      * @param array parameters
      * @return int
      */
-    public function count($parameters = null);
+    public function count($parameters = null, $options = []);
 
     /**
      * 计算总和
@@ -69,7 +62,7 @@ interface QueryInterface
      * @param array parameters
      * @return double
      */
-    public function average($parameters = null);
+    public function average($parameters = null, $option = null);
 
 
 }
