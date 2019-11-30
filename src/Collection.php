@@ -142,7 +142,6 @@ class Collection implements CollectionInterface
      */
     private function data2res($data)
     {
-        dump($data);
         if ($data instanceof Cursor) {
             $res = new Result($this, $data);
             return $res;

@@ -23,7 +23,6 @@
     "lodash-php/lodash-php": "^0.0.6"
   },
   "require-dev": {
-    "phalcon/ide-stubs": "v3.4.*",
     "phpunit/phpunit": "^7.0",
     "phpunit/dbunit": "^4.0",
     "symfony/var-dumper": "^5.0"

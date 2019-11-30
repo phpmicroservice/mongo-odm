@@ -123,13 +123,12 @@ class Document implements DocumentInterface, \ArrayAccess
     public function save(array $data = []): bool
     {
         # 新建判断
-        if ($this->getId()) {
+        if (!$this->getId()) {
             return $this->create($data);
         }
         if ($data) {
             $this->dataSet($data);
         }
-
         $uRes = $this->_collection->updateOne(['_id' => $this->getId(false)], [
             '$set' => $this->_data
         ]);
@@ -163,7 +162,6 @@ class Document implements DocumentInterface, \ArrayAccess
     public function delete(): bool
     {
         $uRes = $this->_collection->deleteOne(['_id' => $this->getId(false)]);
-        dump($this->getId(false));
         $this->reset();
         return (bool)$uRes->getDeletedCount();
     }
@@ -240,6 +238,7 @@ class Document implements DocumentInterface, \ArrayAccess
      */
     public function __set($name, $value)
     {
+
         # 是否可设置
         if (!$this->_fields || in_array($name, $this->_fields)) {
             return $this->setCall($name, $value);
@@ -326,8 +325,7 @@ class Document implements DocumentInterface, \ArrayAccess
             $de = $field[0];
             return $this->_data[$name] = $de;
         }
-        return;
-
+        $this->_data[$name] = $value;
     }
 
 }
