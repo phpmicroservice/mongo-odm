@@ -44,6 +44,7 @@ class Query implements QueryInterface
     }
 
     /**
+     * 更新一条
      * @param $filter
      * @param $update
      * @param array $options
@@ -71,7 +72,7 @@ class Query implements QueryInterface
      * @param array parameters
      * @return static
      */
-    public function findFirst($filter = [], $options)
+    public function findFirst($filter = [], $options = [])
     {
         return $this->_collection->findOne($filter, $options);
     }

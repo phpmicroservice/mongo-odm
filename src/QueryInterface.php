@@ -21,7 +21,7 @@ interface QueryInterface
      * @param array parameters
      * @return static
      */
-    public function findFirst($filter = [], $options);
+    public function findFirst($filter = [], $options = []);
 
 
     /**

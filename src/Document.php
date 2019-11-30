@@ -76,6 +76,7 @@ class Document implements DocumentInterface, \ArrayAccess
 
         $this->_data = $bsondocument->getArrayCopy();
         $this->_id = $this->_data['_id'];
+        return $this;
     }
 
 
@@ -144,6 +145,7 @@ class Document implements DocumentInterface, \ArrayAccess
         foreach ($data as $key => $val) {
             $this->$key = $val;
         }
+        return $this;
     }
 
     /**
@@ -175,6 +177,7 @@ class Document implements DocumentInterface, \ArrayAccess
         if ($dd instanceof BSONDocument) {
             $this->setBsonDocument($dd);
         }
+        return $this;
     }
 
 
@@ -186,6 +189,7 @@ class Document implements DocumentInterface, \ArrayAccess
     {
         $this->_data = [];
         $this->_bsondocument = null;
+        return $this;
     }
 
     /**
