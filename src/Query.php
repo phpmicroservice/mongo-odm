@@ -9,6 +9,7 @@ use MongoDB\Driver\Cursor;
  * Class Query
  * @package MongoOdm
  * @property \MongoDB\Collection $_collection
+ * @mixin \MongoDB\Collection
  */
 class Query implements QueryInterface
 {
@@ -100,22 +101,11 @@ class Query implements QueryInterface
      */
     public function count($match = null, $options = [])
     {
-        $parameters = [[
-            '$group' => [
-                '_id' => 1,
-                'count' => [
-                    '$sum' => 1
-                ]
-            ]
-        ]];
+        $parameters = [];
         if ($match) {
             $parameters[0]['$match'] = $match;
         }
-        $cursor = $this->_collection->aggregate($parameters, $options);
-        if ($cursor instanceof Cursor) {
-            return $cursor->toArray()[0]['count'];
-        }
-        throw new \Exception('意外的错误！');
+        return $this->_collection->countDocuments($parameters, $options);
     }
 
     /**

@@ -58,7 +58,12 @@ class CollectionTest extends TestCase
         # 删除
         $deres = $coll->deleteOne(['_id' => new ObjectId($id)]);
         $deletedCount = $deres->getDeletedCount();
-        $this->assertEquals(1, $deletedCount, '删除数量不正确');
+        $this->assertEquals(1, $deletedCount, '删除数量不正确 [60]');
+        # 统计
+        $count = $coll->count();
+        $this->assertIsInt($count, '统计结果不是数字 [64]');
+        $coll->insertMany();
+        dump($count);
 
     }
 
