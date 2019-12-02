@@ -19,4 +19,21 @@ class DTest extends TestCase
 //        $this->assertArraySubset(['a', 'c', 'b'], $a1,false,'ArraySubset 3');
     }
 
+    public function testTwo()
+    {
+        $col = new \test\Collection\Demo();
+        $result = $col->getQuery()->insertOne(new \test\Persistable\Demo(uniqid() . 'person'));
+
+        $person = $col->find([
+        ], [
+            'sort' => [
+                '_id' => -1
+            ],
+            'limit' => 5
+        ]);
+        $this->assertTrue(true);
+
+
+    }
+
 }

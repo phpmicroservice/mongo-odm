@@ -1,23 +1,23 @@
 <?php
 
 
-namespace MongoOdm;
+namespace MongoOdm\Document;
 
-use MongoDB\Model\BSONDocument;
+use MongoDB\BSON\ObjectId;
+use MongoOdm\Collection;
+use MongoOdm\Di;
 
 /**
  * 文档
  * Class Document
  * @package MongoOdm
- * @property-read BSONDocument $_bsondocument;
  * @property-read \MongoOdm\Collection $_collection
  */
 class Document implements DocumentInterface, \ArrayAccess
 {
-    private $_collection;# 集合对象 静态
-    protected static $_collection_class;# 集合类名
-    private $_bsondocument;# BSON对象
-    private $_data;# 数据
+    protected $_collection;# 集合对象 静态
+    protected $_collection_class;# 集合类名
+    protected $_data;# 数据
     # 默认值仅在保存的时候起作用
     protected $_fields;# 字段白名单
     protected $_field;# 字段[默认值,类型,是否可空,]
@@ -28,17 +28,16 @@ class Document implements DocumentInterface, \ArrayAccess
      * 构造函数
      * Document constructor.
      * @param Collection $collection
-     * @param null $bsondocument
      */
-    public function __construct(Collection $collection = null, $bsondocument = null)
+    public function __construct(Collection $collection = null)
     {
         if ($collection instanceof Collection) {
             $this->setCollection($collection);
+        } else {
+            $this->getCollection();
         }
 
-        if ($bsondocument) {
-            $this->setBsonDocument($bsondocument);
-        }
+
         if (method_exists($this, 'initialize')) {
             $this->initialize();
         }
@@ -49,48 +48,72 @@ class Document implements DocumentInterface, \ArrayAccess
 
     }
 
-    /**
-     * 获取这个对象
-     * @return bool|Document|void
-     */
-    public static function getDocment()
+    public function getCollection(): Collection
     {
-        if (!class_exists(get_called_class()::$_collection_class)) {
-            return false;
+        if ($this->_collection instanceof Collection) {
+            return $this->_collection;
         }
-        $col = Di::getShared(get_called_class()::$_collection_class);
-        if ($col instanceof Collection) {
-            return new self($col);
+        if ($this->_collection_class) {
+            if (!class_exists($this->_collection_class)) {
+                throw  new \Exception("未定义的集合");
+            }
+            $col = Di::getShared($this->_collection_class);
+            if ($col instanceof Collection) {
+                $this->setCollection($col);
+            } else {
+                throw  new \Exception("定义集合不是集合对象");
+            }
         }
-        return;
+        return $this->_collection;
     }
 
 
     /**
-     * 设置bson对象
-     * @param BSONDocument $bsondocument
+     * bson序列化
+     * @return array|object
      */
-    public function setBsonDocument(BSONDocument $bsondocument)
+    function bsonSerialize()
     {
-        $this->_bsondocument = $bsondocument;
-
-        $this->_data = $bsondocument->getArrayCopy();
-        $this->_id = $this->_data['_id'];
-        return $this;
+        return $this->toArray();
     }
 
+    function bsonUnserialize(array $data)
+    {
+        $this->dataSet($data);
+        $this->_id = $data['_id'];
+
+    }
 
     /**
      * 获取Id 字符串| ObjectId 默认为字符串
      * @param bool $string
-     * @return \MongoDB\BSON\ObjectId|string|void
+     * @return \MongoDB\BSON\ObjectId|string
      */
     public function getId($string = true)
     {
         if ($string) {
-            return (string)$this->_id;
+            return (string)$this->createId();
         }
-        return $this->_id;
+        return $this->createId();
+    }
+
+    /**
+     * 创建并返回Id,存在则直接返回
+     */
+    private function createId(): ObjectId
+    {
+        if (empty($this->_id)) {
+            $this > $this->_id = new ObjectId;
+            $this->dataSet('_id', $this->_id);
+        }
+        if (is_string($this->_id)) {
+            $this > $this->_id = new ObjectId($this->_id);
+            $this->dataSet('_id', $this->_id);
+        }
+        if ($this->_id instanceof ObjectId) {
+            return $this->_id;
+        }
+        throw new \Exception('Id不是ObjectId对象');
     }
 
     /**
@@ -100,7 +123,7 @@ class Document implements DocumentInterface, \ArrayAccess
      */
     public function create(array $data): string
     {
-        if (isset($this->_id)) {
+        if ($this->_id) {
             # 以存在的数据，不允许新建
             return false;
         }
@@ -111,7 +134,7 @@ class Document implements DocumentInterface, \ArrayAccess
             # 没有数据
             throw new \Exception("没有数据存个毛线");
         }
-        $insertOneResult = $this->_collection->insertOne($this->_data);
+        $insertOneResult = $this->getCollection()->insertOne($this);
         return $insertOneResult->getInsertedId();
     }
 
@@ -124,14 +147,14 @@ class Document implements DocumentInterface, \ArrayAccess
     public function save(array $data = []): bool
     {
         # 新建判断
-        if (!$this->getId()) {
+        if (!$this->_id) {
             return $this->create($data);
         }
         if ($data) {
             $this->dataSet($data);
         }
-        $uRes = $this->_collection->updateOne(['_id' => $this->getId(false)], [
-            '$set' => $this->_data
+        $uRes = $this->getCollection()->updateOne(['_id' => $this->getId(false)], [
+            '$set' => $this->dataGet()
         ]);
         return (bool)$uRes->getModifiedCount();
     }
@@ -163,7 +186,7 @@ class Document implements DocumentInterface, \ArrayAccess
      */
     public function delete(): bool
     {
-        $uRes = $this->_collection->deleteOne(['_id' => $this->getId(false)]);
+        $uRes = $this->getCollection()->deleteOne(['_id' => $this->getId(false)]);
         $this->reset();
         return (bool)$uRes->getDeletedCount();
     }
@@ -173,10 +196,8 @@ class Document implements DocumentInterface, \ArrayAccess
      */
     public function refresh()
     {
-        $dd = $this->_collection->getQuery()->findFirstById($this->getId());
-        if ($dd instanceof BSONDocument) {
-            $this->setBsonDocument($dd);
-        }
+        $doc2 = $this->getCollection()->getQuery()->findFirstById($this->getId());
+        $this->dataSet($doc2->toArray());
         return $this;
     }
 
@@ -188,7 +209,6 @@ class Document implements DocumentInterface, \ArrayAccess
     public function reset()
     {
         $this->_data = [];
-        $this->_bsondocument = null;
         return $this;
     }
 
@@ -199,7 +219,9 @@ class Document implements DocumentInterface, \ArrayAccess
      */
     public function setCollection(Collection $collection)
     {
-        return $this->_collection = $collection;
+        $this->_collection = $collection;
+        $this->_collection_class = get_class($this);
+        return $this;
     }
 
     /**
@@ -331,5 +353,11 @@ class Document implements DocumentInterface, \ArrayAccess
         }
         $this->_data[$name] = $value;
     }
+
+    public function toArray(): array
+    {
+        return $this->dataGet();
+    }
+
 
 }

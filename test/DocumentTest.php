@@ -19,7 +19,7 @@ class DocumentTest extends TestCase
             'date' => time()
         ];
         # 增加
-        $demo = Demo::getDocment();
+        $demo = new Demo();
         $id = $demo->create($data);
         $this->assertIsString($id, 'Id应该是字符串类型 [23]');# 字符串类型id
 
@@ -37,20 +37,20 @@ class DocumentTest extends TestCase
             'name' => uniqid()
         ];
         $doc->dataSet($data2);
-        $this->assertArraySubset($data2, $doc->dataGet(), false, '本地修改后数据错误 [30]');
+        $this->assertArraySubset($data2, $doc->dataGet(), false, '本地修改后数据错误 [' . __LINE__ . ']');
         # 刷新数据库数据
         $doc->refresh();
-        $this->assertArraySubset($data, $doc->dataGet(), false, '本地数据拉取后数据错误 [30]');
+        $this->assertArraySubset($data, $doc->dataGet(), false, '本地数据拉取后数据错误  [' . __LINE__ . ']');
         # 本地数据重置
         $doc->reset();# 重置数据不落库
         $this->assertEmpty($doc->dataGet(), '文档重置后数据错误 [37]');
         # 落库修改
         $reSave = $doc->save($data2);
         $this->assertTrue($reSave, '落库修改失败 [30]');
-        $this->assertArraySubset($data2, $doc->dataGet(), false, '落库修改后数据错误 [30]');
+        $this->assertArraySubset($data2, $doc->dataGet(), false, '落库修改后数据错误 [' . __LINE__ . ']');
         # 刷新数据
         $doc->refresh();
-        $this->assertArraySubset($data2, $doc->dataGet(), false, '落库修改后数据错误2 [30]');
+        $this->assertArraySubset($data2, $doc->dataGet(), false, '落库修改后数据错误2 [' . __LINE__ . ']');
         # 删除
         $doc->refresh();# 读取数据库数据
         $old = $col->count();# 统计集合

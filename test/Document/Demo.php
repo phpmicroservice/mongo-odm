@@ -2,10 +2,10 @@
 
 namespace test\Document;
 
-use MongoOdm\Document;
+use MongoOdm\Document\Document;
 
 class Demo extends Document
 {
 
-    protected static $_collection_class = \test\Collection\Demo::class;
+    protected $_collection_class = \test\Collection\Demo::class;
 }

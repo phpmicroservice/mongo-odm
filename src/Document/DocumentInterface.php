@@ -1,15 +1,16 @@
 <?php
 
-namespace MongoOdm;
+namespace MongoOdm\Document;
 
 use MongoDB\BSON\ObjectId;
+use MongoOdm\Collection;
 
 /**
  * 文档
  * Interface DocumentInterface
  * @package mongoodm
  */
-interface DocumentInterface
+interface DocumentInterface extends NativeInterface
 {
 
     /**
@@ -36,7 +37,7 @@ interface DocumentInterface
      * @param array $data
      * @return bool
      */
-    public function save(array $data): bool ;
+    public function save(array $data): bool;
 
     /**
      * 删除数据
@@ -54,6 +55,12 @@ interface DocumentInterface
      * 重置模型实例数据
      */
     public function reset();
+
+    /**
+     * 转换为数组
+     * @return array
+     */
+    public function toArray(): array;
 
 
 }

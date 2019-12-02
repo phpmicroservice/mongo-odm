@@ -3,7 +3,7 @@
 namespace test;
 
 use MongoOdm\Collection;
-use MongoOdm\Document;
+use MongoOdm\Document\Document;
 use test\Collection\Demo;
 
 class OneTest extends \PHPUnit\Framework\TestCase
@@ -16,7 +16,7 @@ class OneTest extends \PHPUnit\Framework\TestCase
     {
         $demo = new Demo();
         $this->assertInstanceOf(Collection::class, $demo, '错误的类型!');
-        $demodoc = \test\Document\Demo::getDocment();
+        $demodoc = new \test\Document\Demo();
         $this->assertInstanceOf(Document::class, $demodoc, '错误的类型!');
     }
 

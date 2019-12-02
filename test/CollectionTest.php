@@ -18,7 +18,7 @@ class CollectionTest extends TestCase
     public function testOne()
     {
         $data = [
-            'username' => uniqid() . 'username',
+            'username' => date('y-m-d h:i:s') . 'username',
             'password' => password_hash('123456', 1)
         ];
         # 增加
