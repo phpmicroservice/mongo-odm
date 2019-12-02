@@ -15,12 +15,15 @@ class Query implements QueryInterface
 {
 
     private $_collection;
+    private $_parameters = [];
+    private $_option = [];
 
 
     public function __construct(\MongoDB\Collection $collection)
     {
         $this->_collection = $collection;
     }
+
 
     /**
      * 查询
@@ -101,10 +104,11 @@ class Query implements QueryInterface
      */
     public function count($match = null, $options = [])
     {
-        $parameters = [];
+        $parameters = $this->_parameters;
         if ($match) {
             $parameters[0]['$match'] = $match;
         }
+        $this->_parameters = [];
         return $this->_collection->countDocuments($parameters, $options);
     }
 
@@ -151,6 +155,45 @@ class Query implements QueryInterface
     {
         return $this->_collection->aggregate($parameters, $option);
     }
+
+
+    /**
+     * 进行limit设置
+     * @param $limit
+     * @return $this
+     */
+    public function limit($limit)
+    {
+        $this->_option['limit'] = $limit;
+        return $this;
+    }
+
+    /**
+     * 删除多个
+     * @param $filter
+     * @param array $options
+     * @return \MongoDB\DeleteResult
+     */
+    public function deleteMany($filter, array $options = [])
+    {
+        $options = $this->getOptions($options, true);
+        return $this->_collection->deleteMany($filter, $options);
+    }
+
+
+    /**
+     * 获取设置
+     * @param array $options
+     */
+    private function getOptions($options = [], $reset = false)
+    {
+        $options = array_merge_recursive($this->_option, $options);
+        if ($reset) {
+            $this->_option = [];
+        }
+        return $options;
+    }
+
 
     /**
      * 魔术方法,当调用不存在的方法的时候调用

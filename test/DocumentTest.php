@@ -20,7 +20,10 @@ class DocumentTest extends TestCase
         ];
         # 增加
         $demo = new Demo();
-        $id = $demo->create($data);
+        $demo = $demo->create($data);
+        if ($demo instanceof Demo) {
+            $id = $demo->getId();
+        }
         $this->assertIsString($id, 'Id应该是字符串类型 [23]');# 字符串类型id
 
         $col = new \test\Collection\Demo();

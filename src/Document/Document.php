@@ -100,15 +100,20 @@ class Document implements DocumentInterface, \ArrayAccess
     /**
      * 创建并返回Id,存在则直接返回
      */
-    private function createId(): ObjectId
+    private function createId($id = null): ObjectId
     {
+
+        if ($id instanceof ObjectId) {
+            $this->_id = $id;
+            $this->dataSet(['_id' => $this->_id]);
+        }
         if (empty($this->_id)) {
-            $this > $this->_id = new ObjectId;
-            $this->dataSet('_id', $this->_id);
+            $this->_id = new ObjectId;
+            $this->dataSet(['_id' => $this->_id]);
         }
         if (is_string($this->_id)) {
-            $this > $this->_id = new ObjectId($this->_id);
-            $this->dataSet('_id', $this->_id);
+            $this->_id = new ObjectId($this->_id);
+            $this->dataSet(['_id' => $this->_id]);
         }
         if ($this->_id instanceof ObjectId) {
             return $this->_id;
@@ -119,9 +124,9 @@ class Document implements DocumentInterface, \ArrayAccess
     /**
      * 创建文档,落库
      * @param array $data
-     * @return string
+     * @return Document
      */
-    public function create(array $data): string
+    public function create(array $data)
     {
         if ($this->_id) {
             # 以存在的数据，不允许新建
@@ -134,8 +139,20 @@ class Document implements DocumentInterface, \ArrayAccess
             # 没有数据
             throw new \Exception("没有数据存个毛线");
         }
+        if (method_exists($this, 'beforeCreate')) {
+            if ($this->beforeCreate($this->_data) === false) {
+                return false;
+            }
+        }
         $insertOneResult = $this->getCollection()->insertOne($this);
-        return $insertOneResult->getInsertedId();
+        $this->createId($insertOneResult->getInsertedId());
+        if (method_exists($this, 'afterCreate')) {
+            $this->afterCreate($insertOneResult);
+        }
+        if (!$insertOneResult->getInsertedCount()) {
+            return false;
+        }
+        return $this;
     }
 
 
@@ -153,11 +170,45 @@ class Document implements DocumentInterface, \ArrayAccess
         if ($data) {
             $this->dataSet($data);
         }
+        if (method_exists($this, 'beforeSave')) {
+            if ($this->beforeSave($this->_data) === false) {
+                return false;
+            }
+        }
         $uRes = $this->getCollection()->updateOne(['_id' => $this->getId(false)], [
             '$set' => $this->dataGet()
         ]);
+        if (method_exists($this, 'afterSave')) {
+            $this->afterSave($uRes);
+        }
         return (bool)$uRes->getModifiedCount();
     }
+
+
+    /**
+     * 删除数据,落库
+     * @return bool
+     */
+    public function delete(): bool
+    {
+        if (method_exists($this, 'beforeDelete')) {
+            if ($this->beforeDelete($this->_data) === false) {
+                return false;
+            }
+        }
+        $dRes = $this->getCollection()->deleteOne(['_id' => $this->getId(false)]);
+
+        if (!$dRes->getDeletedCount()) {
+            return false;
+        }
+        $this->reset();
+        $this->_id = null;# 重置标识Id
+        if (method_exists($this, 'afterDelete')) {
+            $this->afterDelete($dRes);
+        }
+        return true;
+    }
+
 
     /**
      * 设置数据
@@ -180,16 +231,6 @@ class Document implements DocumentInterface, \ArrayAccess
         return $this->_data;
     }
 
-    /**
-     * 删除数据,落库
-     * @return bool
-     */
-    public function delete(): bool
-    {
-        $uRes = $this->getCollection()->deleteOne(['_id' => $this->getId(false)]);
-        $this->reset();
-        return (bool)$uRes->getDeletedCount();
-    }
 
     /**
      * 刷新模型属性，从数据库中重新查询记录

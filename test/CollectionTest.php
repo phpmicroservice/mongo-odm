@@ -25,8 +25,14 @@ class CollectionTest extends TestCase
         # 在集合中增加一条数据
         $coll = new Demo();
         # ->创建本地对象 -> 落库
-        $id = $coll->createDocument()->create($data);
+        $re = $coll->createDocument()->create($data);
+        if ($re instanceof \test\Document\Demo) {
+            $id = $re->getId();
+
+        }
+        $this->assertInstanceOf(\test\Document\Demo::class, $re, '返回信息不是对象类型');# pa
         $this->assertIsString($id, 'Id应该是字符串类型 [23]');# 字符串类型id
+
         # 查找
         $doc = $coll->findFirstById($id);
         $this->assertInstanceOf(\test\Document\Demo::class, $doc, '返回信息不是对象类型');# pa
@@ -62,8 +68,12 @@ class CollectionTest extends TestCase
         # 统计
         $count = $coll->count();
         $this->assertIsInt($count, '统计结果不是数字 [64]');
-        $coll->insertMany();
-        dump($count);
+        # 删除全部内容
+        $dere = $coll->deleteMany([]);
+        $countnew = $coll->count();
+
+        $this->assertEquals(0, $countnew, '删除后还有内容');
+
 
     }
 

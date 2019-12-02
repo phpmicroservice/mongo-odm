@@ -31,7 +31,7 @@ interface DocumentInterface extends NativeInterface
      * @param array $data
      * @return string
      */
-    public function create(array $data): string;
+    public function create(array $data);
 
     /**
      * @param array $data
