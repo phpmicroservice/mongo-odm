@@ -29,11 +29,12 @@ class Query implements QueryInterface
      * 查询
      * @param array $parameters
      * @param array $option
-     * @return Result
+     * @return Cursor
      */
-    public function find(array $parameters = [], array $option)
+    public function find(array $parameters = [], array $options = [])
     {
-        return $this->_collection->find($parameters, $option);
+        $options = $this->getOptions($options, true);
+        return $this->_collection->find($parameters, $options);
     }
 
     /**

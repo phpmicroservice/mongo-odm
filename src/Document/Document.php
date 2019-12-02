@@ -126,7 +126,7 @@ class Document implements DocumentInterface, \ArrayAccess
      * @param array $data
      * @return Document
      */
-    public function create(array $data)
+    public function create(array $data = [])
     {
         if ($this->_id) {
             # 以存在的数据，不允许新建
@@ -305,10 +305,9 @@ class Document implements DocumentInterface, \ArrayAccess
      */
     public function __set($name, $value)
     {
-
         # 是否可设置
         if (!$this->_fields || in_array($name, $this->_fields)) {
-            return $this->setCall($name, $value);
+            $this->setCall($name, $value);
         }
     }
 
