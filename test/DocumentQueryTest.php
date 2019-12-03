@@ -38,13 +38,8 @@ class DocumentQueryTest extends TestCase
     public function testOne()
     {
         $demo = new \test\Collection\Demo();
-        $list = $demo->limit(5)->filter([
-            'type' => mt_rand(0, 10)
-        ])->find();
-        foreach ($list as $doc) {
-            dump($doc);
-        }
-
+        $f = $demo->equal('type', 1)->lt('a', 2, 1)->getFilter();
+        dump($f);
 
     }
 

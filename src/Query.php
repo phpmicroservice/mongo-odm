@@ -5,6 +5,7 @@ namespace MongoOdm;
 use MongoDB\BSON\ObjectId;
 use MongoDB\Driver\Cursor;
 use MongoDB\Driver\Session;
+use MongoOdm\Query\QueryFilter;
 use MongoOdm\Query\QueryOptions;
 
 /**
@@ -21,6 +22,7 @@ class Query implements QueryInterface
     private $_option = [];
 
     use QueryOptions;
+    use QueryFilter;
 
     public function __construct(\MongoDB\Collection $collection)
     {
@@ -152,6 +154,7 @@ class Query implements QueryInterface
         }
         return $filter;
     }
+
 
     /**
      * 获取设置
