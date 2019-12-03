@@ -4,6 +4,8 @@ namespace MongoOdm;
 
 use MongoDB\BSON\ObjectId;
 use MongoDB\Driver\Cursor;
+use MongoDB\Driver\Session;
+use MongoOdm\Query\QueryOptions;
 
 /**
  * Class Query
@@ -15,9 +17,10 @@ class Query implements QueryInterface
 {
 
     private $_collection;
-    private $_parameters = [];
+    private $_filter = [];
     private $_option = [];
 
+    use QueryOptions;
 
     public function __construct(\MongoDB\Collection $collection)
     {
@@ -27,14 +30,13 @@ class Query implements QueryInterface
 
     /**
      * 查询
-     * @param array $parameters
+     * @param array $filter
      * @param array $option
      * @return Cursor
      */
-    public function find(array $parameters = [], array $options = [])
+    public function find(array $filter = [], array $options = [])
     {
-        $options = $this->getOptions($options, true);
-        return $this->_collection->find($parameters, $options);
+        return $this->filterOptionsCall('find', $filter, $options);
     }
 
     /**
@@ -57,6 +59,8 @@ class Query implements QueryInterface
      */
     public function updateOne($filter, $update, array $options = [])
     {
+        $filter = $this->getFilter($filter, true);
+        $options = $this->getOptions($options, true);
         return $this->_collection->updateOne($filter, $update, $options);
     }
 
@@ -68,7 +72,18 @@ class Query implements QueryInterface
      */
     public function deleteOne($filter, array $options = [])
     {
-        return $this->_collection->deleteOne($filter, $options);
+        return $this->filterOptionsCall('deleteOne', $filter, $options);
+    }
+
+    /**
+     * 删除多个
+     * @param $filter
+     * @param array $options
+     * @return \MongoDB\DeleteResult
+     */
+    public function deleteMany($filter, array $options = [])
+    {
+        return $this->filterOptionsCall('deleteMany', $filter, $options);
     }
 
     /**
@@ -79,7 +94,7 @@ class Query implements QueryInterface
      */
     public function findFirst($filter = [], $options = [])
     {
-        return $this->_collection->findOne($filter, $options);
+        return $this->filterOptionsCall('findOne', $filter, $options);
     }
 
     /**
@@ -93,25 +108,76 @@ class Query implements QueryInterface
         $filter = [
             '_id' => new ObjectId($id)
         ];
-        return $this->_collection->findOne($filter, $options);
+        return $this->filterOptionsCall('findOne', $filter, $options);
     }
 
 
     /**
      * 统计数量
      *
-     * @param array parameters
+     * @param array $filter
      * @return int
      */
-    public function count($match = null, $options = [])
+    public function count($filter = [], $options = [])
     {
-        $parameters = $this->_parameters;
-        if ($match) {
-            $parameters[0]['$match'] = $match;
-        }
-        $this->_parameters = [];
-        return $this->_collection->countDocuments($parameters, $options);
+        return $this->filterOptionsCall('countDocuments', $filter, $options);
     }
+
+    /**
+     * 对参数是  $filter,$options 的方法进行调用
+     * @param $name
+     * @param array $filter
+     * @param array $options
+     * @return mixed
+     */
+    private function filterOptionsCall($name, $filter = [], array $options = [])
+    {
+        $filter = $this->getFilter($filter, true);
+        $options = $this->getOptions($options, true);
+        return $this->_collection->$name($filter, $options);
+    }
+
+
+    /**
+     * 回去过滤规则
+     * @param array $filter
+     * @param bool $reset
+     * @return array
+     */
+    public function getFilter($filter = [], $reset = false)
+    {
+        $filter = array_merge_recursive($this->_filter, $filter);
+        if ($reset) {
+            $this->_filter = [];
+        }
+        return $filter;
+    }
+
+    /**
+     * 获取设置
+     * @param array $options
+     */
+    public function getOptions($options = [], $reset = false)
+    {
+        $options = array_merge_recursive($this->_option, $options);
+        if ($reset) {
+            $this->_option = [];
+        }
+        return $options;
+    }
+
+
+    /**
+     * 增加过滤器条件
+     * @param array $filter
+     * @return $this
+     */
+    public function filter(array $filter)
+    {
+        $this->_filter = array_merge_recursive($this->_filter, $filter);
+        return $this;
+    }
+
 
     /**
      * 计算总和
@@ -146,6 +212,7 @@ class Query implements QueryInterface
         return $this->_collection->aggregate($parameters, $option);
     }
 
+
     /**
      * 平均值
      *
@@ -155,44 +222,6 @@ class Query implements QueryInterface
     public function average($parameters = null, $option = null)
     {
         return $this->_collection->aggregate($parameters, $option);
-    }
-
-
-    /**
-     * 进行limit设置
-     * @param $limit
-     * @return $this
-     */
-    public function limit($limit)
-    {
-        $this->_option['limit'] = $limit;
-        return $this;
-    }
-
-    /**
-     * 删除多个
-     * @param $filter
-     * @param array $options
-     * @return \MongoDB\DeleteResult
-     */
-    public function deleteMany($filter, array $options = [])
-    {
-        $options = $this->getOptions($options, true);
-        return $this->_collection->deleteMany($filter, $options);
-    }
-
-
-    /**
-     * 获取设置
-     * @param array $options
-     */
-    private function getOptions($options = [], $reset = false)
-    {
-        $options = array_merge_recursive($this->_option, $options);
-        if ($reset) {
-            $this->_option = [];
-        }
-        return $options;
     }
 
 

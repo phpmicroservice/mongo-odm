@@ -77,14 +77,14 @@ class CollectionTest extends TestCase
     public function testDelete()
     {
 
-//        $coll  = new Demo();
-//        dump($coll->count());
-//        # 删除全部内容
-//
-//        $dere = $coll->limit(1)->deleteMany([]);
+        $coll = new Demo();
+        dump($coll->count());
+        # 删除全部内容
+
+        $dere = $coll->deleteMany([]);
 //        $this->assertEquals(2, $dere->getDeletedCount(), '删除了更多内容 ['.__LINE__.']');
-//        $countnew = $coll->count();
-//        $this->assertEquals(0, $countnew, '删除后还有内容');
+        $countnew = $coll->count();
+        $this->assertEquals(0, $countnew, '删除后还有内容');
     }
 
 }

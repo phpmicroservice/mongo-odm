@@ -20,7 +20,8 @@
     "mongodb/mongodb": "^1.5",
     "ext-json": "^1.5",
     "ext-mongodb": "*",
-    "lodash-php/lodash-php": "^0.0.6"
+    "lodash-php/lodash-php": "^0.0.6",
+    "fzaninotto/faker": "^1.9"
   },
   "require-dev": {
     "phpunit/phpunit": "^7.0",
