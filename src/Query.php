@@ -111,6 +111,8 @@ class Query implements QueryInterface
             '_id' => new ObjectId($id)
         ];
         return $this->filterOptionsCall('findOne', $filter, $options);
+
+
     }
 
 

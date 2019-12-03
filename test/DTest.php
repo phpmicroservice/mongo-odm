@@ -23,17 +23,17 @@ class DTest extends TestCase
     {
         $col = new \test\Collection\Demo();
         $result = $col->getQuery()->insertOne(new \test\Persistable\Demo(uniqid() . 'person'));
-
-        $person = $col->find([
-        ], [
-            'sort' => [
-                '_id' => -1
-            ],
-            'limit' => 5
-        ]);
+        $this->assertEquals(1, $col->count(), '内容有点多 [' . __LINE__ . ']');
+        $person = $col->find();
         $this->assertTrue(true);
 
+    }
 
+    public function tearDown()
+    {
+        $coll = new \test\Collection\Demo();
+        # 删除全部内容
+        $coll->deleteMany([]);
     }
 
 }

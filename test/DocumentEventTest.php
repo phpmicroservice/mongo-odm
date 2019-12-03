@@ -40,6 +40,7 @@ class DocumentEventTest extends TestCase
         if ($demo2 instanceof Demo) {
 
         }
+
         return $demo2->getId();
     }
 
@@ -48,6 +49,10 @@ class DocumentEventTest extends TestCase
      */
     public function testFind($id)
     {
+        dump($id);
+        $demo = new \test\Collection\Demo;
+        sleep(1);
+        $doc = \test\Collection\Demo::findFirstById($id);
         $doc = \test\Collection\Demo::findFirstById($id);
         $this->assertInstanceOf(DemoEvent::class, $doc, '返回对象不对 [' . __LINE__ . ']');
         return $doc;
@@ -96,6 +101,15 @@ class DocumentEventTest extends TestCase
         $doc->cd = 1;
         $re2 = $doc->delete();
         $this->assertTrue($re2, '竟然删除失败了 [' . __LINE__ . ']');
+    }
+
+
+    public static function tearDownAfterClass()
+    {
+        $coll = new \test\Collection\Demo();
+        # 删除全部内容
+        $coll->deleteMany([]);
+
     }
 
 

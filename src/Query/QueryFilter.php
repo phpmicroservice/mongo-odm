@@ -36,9 +36,7 @@ trait QueryFilter
             $this->_filter['$or'] = [];
         }
         if ($ex == '$equal') {
-            $this->_filter['$or'][] = [
-                $name => $value
-            ];
+            $this->_filter['$or'][] = [$name => $value];
         } else {
             $this->_filter['$or'][] = [
                 $name => [
@@ -61,14 +59,10 @@ trait QueryFilter
             $this->_filter = [];
         }
         if ($ex == '$equal') {
-            $this->_filter[] = [
-                $name => $value
-            ];
+            $this->_filter[$name] = $value;
         } else {
-            $this->_filter[] = [
-                $name => [
-                    $ex => $value
-                ]
+            $this->_filter[$name] = [
+                $ex => $value
             ];
         }
         return $this;

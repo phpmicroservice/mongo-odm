@@ -78,10 +78,9 @@ class Collection implements CollectionInterface
     public function __call($method, $arguments)
     {
         if (method_exists(Query::class, $method)) {
-            $re = call_user_func_array([$this->getQuery(), $method], $arguments);
-            return $this->data2res($re);
+            return call_user_func_array([$this->getQuery(), $method], $arguments);
         }
-        return null;
+        throw new \Exception("不存在的方法:" . $method);
     }
 
     /**
@@ -102,11 +101,7 @@ class Collection implements CollectionInterface
      */
     public static function __callStatic($name, $arguments)
     {
-        $re = self::_invokeFinder($name, $arguments);
-        if (is_null($re)) {
-            throw new \Exception('err114');
-        }
-        return $re;
+        return self::_invokeFinder($name, $arguments);
     }
 
     /**
@@ -118,10 +113,9 @@ class Collection implements CollectionInterface
     {
         $collection = Di::getShared(get_called_class());
         if (method_exists(Query::class, $method) && $collection instanceof Collection) {
-            $re = call_user_func_array([$collection->getQuery(), $method], $arguments);
-            return $collection->data2res($re);
+            return call_user_func_array([$collection->getQuery(), $method], $arguments);
         }
-        return null;
+        throw new \Exception("没有找到静态方法:" . $method);
     }
 
     /**
@@ -137,14 +131,6 @@ class Collection implements CollectionInterface
             throw new \Exception("不存在的文档类!");
         }
         return new $this->_documentclass($this);
-    }
-
-    /**
-     * 将mongodb返回的数据转换为 result
-     */
-    private function data2res($data)
-    {
-        return $data;
     }
 
 

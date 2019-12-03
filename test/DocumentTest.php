@@ -63,4 +63,13 @@ class DocumentTest extends TestCase
         $this->assertEmpty($doc->dataGet(), '文档删除后重置失败 [37]');
     }
 
+
+    public function tearDown()
+    {
+        $coll = new \test\Collection\Demo();
+        # 删除全部内容
+        $dere = $coll->deleteMany([]);
+        $this->assertEquals(0, $dere->getDeletedCount(), '删除了更多内容 [' . __LINE__ . ']');
+    }
+
 }

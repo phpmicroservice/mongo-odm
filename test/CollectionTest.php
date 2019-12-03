@@ -78,11 +78,9 @@ class CollectionTest extends TestCase
     {
 
         $coll = new Demo();
-        dump($coll->count());
         # 删除全部内容
-
         $dere = $coll->deleteMany([]);
-//        $this->assertEquals(2, $dere->getDeletedCount(), '删除了更多内容 ['.__LINE__.']');
+        $this->assertEquals(0, $dere->getDeletedCount(), '删除了更多内容 [' . __LINE__ . ']');
         $countnew = $coll->count();
         $this->assertEquals(0, $countnew, '删除后还有内容');
     }
