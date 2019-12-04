@@ -1,5 +1,7 @@
 # mongo-odm 对象文档映射器
 
+https://packagist.org/packages/phpmicroservice/mongo-odm
+
 > mongodb的面向对象操作库,采用PHP对象和mongodb文档建立映射关系的方式达到对象操作数据库的目的
 
 ## Collection 集合
