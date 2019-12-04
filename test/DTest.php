@@ -3,6 +3,7 @@
 namespace test;
 
 use PHPUnit\Framework\TestCase;
+use test\Collection\Demo1;
 use test\Document\Demo;
 
 /**
@@ -26,8 +27,18 @@ class DTest extends TestCase
         $this->assertEquals(1, $col->count(), '内容有点多 [' . __LINE__ . ']');
         $person = $col->find();
         $this->assertTrue(true);
+    }
+
+    public function testSan()
+    {
+        $demo1 = new Demo1();
+        $doc = $demo1->createDocument()->create([
+            'demo' => 1,
+            'name' => uniqid()
+        ]);
 
     }
+
 
     public function tearDown()
     {

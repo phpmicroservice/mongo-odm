@@ -4,6 +4,7 @@ namespace MongoOdm;
 
 use MongoDB\Driver\Cursor;
 use MongoDB\Model\BSONDocument;
+use MongoOdm\Document\Document;
 use MongoOdm\Document\Native;
 use MongoOdm\Document\NativeInterface;
 use function _\snakeCase;
@@ -121,10 +122,10 @@ class Collection implements CollectionInterface
     /**
      * 创建一个 文档对象
      * @param null $bsondocument
-     * @return DocumentInterface
+     * @return DocumentInterface |NativeInterface
      * @throws \Exception
      */
-    public function createDocument(): NativeInterface
+    public function createDocument()
     {
         if (!class_exists($this->_documentclass)) {
             # 文档类不存在

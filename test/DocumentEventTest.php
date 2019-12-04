@@ -49,10 +49,6 @@ class DocumentEventTest extends TestCase
      */
     public function testFind($id)
     {
-        dump($id);
-        $demo = new \test\Collection\Demo;
-        sleep(1);
-        $doc = \test\Collection\Demo::findFirstById($id);
         $doc = \test\Collection\Demo::findFirstById($id);
         $this->assertInstanceOf(DemoEvent::class, $doc, '返回对象不对 [' . __LINE__ . ']');
         return $doc;
