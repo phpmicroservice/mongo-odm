@@ -13,6 +13,8 @@ use MongoOdm\Query\QueryOptions;
  * @package MongoOdm
  * @property \MongoDB\Collection $_collection
  * @mixin \MongoDB\Collection
+ * @mixin Query\QueryFilter
+ * @mixin Query\QueryOptions
  */
 class Query implements QueryInterface
 {
