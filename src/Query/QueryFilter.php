@@ -55,9 +55,6 @@ trait QueryFilter
      */
     private function setFilter($ex, $name, $value)
     {
-        if (!isset($this->_filter['$or'])) {
-            $this->_filter = [];
-        }
         if ($ex == '$equal') {
             $this->_filter[$name] = $value;
         } else {

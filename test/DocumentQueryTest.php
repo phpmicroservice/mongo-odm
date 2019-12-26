@@ -100,6 +100,16 @@ class DocumentQueryTest extends TestCase
         }
     }
 
+    public function testOne()
+    {
+        $demo = new \test\Collection\Demo();;
+        $fl = $demo->getQuery()
+            ->lt('aa', 10)
+            ->equal('bb', 100)
+            ->getFilter();
+
+    }
+
 
     /**
      * 清理数据
