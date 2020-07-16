@@ -102,7 +102,7 @@ trait QueryFilter
      * @param bool $or
      * @return $this
      */
-    public function notequal($name, array $value, $or = false)
+    public function notequal($name, $value, $or = false)
     {
         return $this->ne($name, $value, $or);
     }
@@ -114,7 +114,7 @@ trait QueryFilter
      * @param bool $or
      * @return $this
      */
-    public function ne($name, array $value, $or = false)
+    public function ne($name, $value, $or = false)
     {
         if ($or) {
             return $this->setFilterOr('$ne', $name, $value);
